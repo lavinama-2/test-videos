@@ -81,20 +81,25 @@ class DDPGAgent(AbstractAgent):
             target_update=1,
             double=True)
 
-    def act(self, state):
+    def act(self, state, step_exploration_time=True):
         """
             Act according to the state-action value model and an exploration policy
         :param state: current state
+        :param step_exploration_time: step the exploration schedule
         :return: an action
         """
         self.previous_state = state
+        if step_exploration_time:
+            self.exploration_policy.step_time()
         # Handle multi-agent observations
         # TODO: it would be more efficient to forward a batch of states
         if isinstance(state, tuple):
-            return tuple(self.act(agent_state) for agent_state in state)
+            return tuple(self.act(agent_state, step_exploration_time=False) for
+                         agent_state in state)
 
         # Single-agent setting
-        return self.get_action(state)
+        action = self.get_action(state)
+        return self.exploration_policy.get_action(action)
 
     def record(self, state, action, reward, next_state, done, info):
         """
@@ -138,27 +143,41 @@ class DDPGAgent(AbstractAgent):
         # Compute concatenate the batch elements
         if not isinstance(batch.state, torch.Tensor):
             # logger.info("Casting the batch to torch.tensor")
-            state = torch.cat(tuple(torch.tensor([batch.state], dtype=torch.float))).to(self.device)
-            action = torch.tensor(batch.action, dtype=torch.float).to(self.device)
-            reward = torch.tensor(batch.reward, dtype=torch.float).to(self.device)
-            next_state = torch.cat(tuple(torch.tensor([batch.next_state], dtype=torch.float))).to(self.device)
-            terminal = torch.tensor(batch.terminal, dtype=torch.bool).to(self.device)
-            batch = Transition(state, action, reward, next_state, terminal, batch.info)
+            state = torch.cat(
+                tuple(torch.tensor([batch.state], dtype=torch.float))).to(
+                self.device)
+            action = torch.tensor(batch.action, dtype=torch.float).to(
+                self.device)
+            reward = torch.tensor(batch.reward, dtype=torch.float).to(
+                self.device)
+            next_state = torch.cat(
+                tuple(torch.tensor([batch.next_state], dtype=torch.float))).to(
+                self.device)
+            terminal = torch.tensor(batch.terminal, dtype=torch.bool).to(
+                self.device)
+            batch = Transition(state, action, reward, next_state, terminal,
+                               batch.info)
 
         # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
         # columns of actions taken
-        state_action_values = self.critic_net(torch.concat([batch.state, batch.action], 1))
+        state_action_values = self.critic_net(
+            torch.concat([batch.state, batch.action], 1))
 
         with torch.no_grad():
             # Compute V(s_{t+1}) for all next states.
-            next_actions = self.actor_target_net(batch.next_state).data.cpu().numpy()
-            next_state_action_values = self.critic_target_net(torch.concat([batch.next_states, next_actions], 1))
+            next_actions = self.actor_target_net(
+                batch.next_state).data.cpu().numpy()
+            next_state_action_values = self.critic_target_net(
+                torch.concat([batch.next_states, next_actions], 1))
             # Compute the expected Q values
-            target_state_action_value = batch.reward + self.config["gamma"] * next_state_action_values
+            target_state_action_value = batch.reward + self.config[
+                "gamma"] * next_state_action_values
 
         # Compute losses
-        critic_loss = self.loss_function(state_action_values, target_state_action_value)
-        policy_loss = -self.critic_net(torch.concat([batch.state, self.actor_net(batch.state)], 1)).mean()
+        critic_loss = self.loss_function(state_action_values,
+                                         target_state_action_value)
+        policy_loss = -self.critic_net(
+            torch.concat([batch.state, self.actor_net(batch.state)], 1)).mean()
         return policy_loss, critic_loss, target_state_action_value, batch
 
     def step_optimizers(self, policy_loss, critic_loss):
@@ -247,6 +266,12 @@ class DDPGAgent(AbstractAgent):
 
     def set_time(self, time):
         self.exploration_policy.set_time(time)
+
+    def eval(self):
+        self.training = False
+        self.config['exploration']['method'] = "OrnsteinUhlenbeck"
+        self.exploration_policy = exploration_factory(
+            self.config["exploration"], self.env.action_space)
 
 
 def step_optimizer(model_net, optimizer, loss):
