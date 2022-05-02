@@ -5,24 +5,10 @@ from abc import abstractmethod, ABC
 from rl_agents.configuration import Configurable
 
 
-class DiscreteDistribution(Configurable, ABC):
+class Distribution(Configurable, ABC):
     def __init__(self, config=None, **kwargs):
-        super(DiscreteDistribution, self).__init__(config)
+        super(Distribution, self).__init__(config)
         self.np_random = None
-
-    @abstractmethod
-    def get_distribution(self):
-        """
-        :return: a distribution over actions {action:probability}
-        """
-        raise NotImplementedError()
-
-    def sample(self):
-        """
-        :return: an action sampled from the distribution
-        """
-        distribution = self.get_distribution()
-        return self.np_random.choice(list(distribution.keys()), 1, p=np.array(list(distribution.values())))[0]
 
     def seed(self, seed=None):
         """
@@ -42,6 +28,34 @@ class DiscreteDistribution(Configurable, ABC):
         pass
 
 
+class DiscreteDistribution(Distribution, ABC):
+    def __init__(self, config=None, **kwargs):
+        super(DiscreteDistribution, self).__init__(config)
+        self.np_random = None
+
+    @abstractmethod
+    def get_distribution(self):
+        """
+        :return: a distribution over actions {action:probability}
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def sample(self):
+        """
+        :return: an action sampled from the distribution
+        """
+        distribution = self.get_distribution()
+        return self.np_random.choice(list(distribution.keys()), 1,
+                                     p=np.array(list(distribution.values())))[0]
+
+
+class ContinuousDistribution(Distribution, ABC):
+    def __init__(self, config=None, **kwargs):
+        super(ContinuousDistribution, self).__init__(config)
+        self.np_random = None
+
+
 def exploration_factory(exploration_config, action_space):
     """
         Handles creation of exploration policies
@@ -52,6 +66,8 @@ def exploration_factory(exploration_config, action_space):
     from rl_agents.agents.common.exploration.boltzmann import Boltzmann
     from rl_agents.agents.common.exploration.epsilon_greedy import EpsilonGreedy
     from rl_agents.agents.common.exploration.greedy import Greedy
+    from rl_agents.agents.common.exploration.ornstein_uhlenbeck import \
+        OrnsteinUhlenbeck
 
     if exploration_config['method'] == 'Greedy':
         return Greedy(action_space, exploration_config)
@@ -59,5 +75,7 @@ def exploration_factory(exploration_config, action_space):
         return EpsilonGreedy(action_space, exploration_config)
     elif exploration_config['method'] == 'Boltzmann':
         return Boltzmann(action_space, exploration_config)
+    elif exploration_config['method'] == 'OrnsteinUhlenbeck':
+        return OrnsteinUhlenbeck(action_space, exploration_config)
     else:
         raise ValueError("Unknown exploration method")
