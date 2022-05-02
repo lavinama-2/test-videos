@@ -13,6 +13,8 @@ class OrnsteinUhlenbeck(ContinuousDistribution):
     def __init__(self, action_space, config=None):
         super(OrnsteinUhlenbeck, self).__init__(config)
         self.action_space = action_space
+        if isinstance(self.action_space, spaces.Tuple):
+            self.action_space = self.action_space.spaces[0]
         if not isinstance(self.action_space, spaces.Box):
             raise TypeError("The action space should be continuous")
         self.action_dim = self.action_space.shape[0]

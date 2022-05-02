@@ -40,7 +40,6 @@ class DiscreteDistribution(Distribution, ABC):
         """
         raise NotImplementedError()
 
-    @abstractmethod
     def sample(self):
         """
         :return: an action sampled from the distribution

@@ -21,7 +21,8 @@ class DDPGAgent(AbstractAgent):
             self.config["exploration"], self.env.action_space)
         self.training = True
         self.previous_state = None
-        size_model_config(self.env, self.config["model"])
+        # TODO: rework size_model_config to configure for continuous action spaces
+        # size_model_config(self.env, self.config["models"])
 
         self.actor_net = model_factory(self.config["models"]["actor"])
         self.actor_target_net = model_factory(self.config["models"]["actor"])
@@ -53,7 +54,7 @@ class DDPGAgent(AbstractAgent):
     def default_config(cls):
         return dict(models=dict(
             actor={
-                "type": "",
+                "type": "ActorNetwork",
                 "in": 7,
                 "base_net": {
                     "type": "MultiLayerPerceptron",
@@ -62,9 +63,12 @@ class DDPGAgent(AbstractAgent):
                 "out": 2,
             },
             critic={
-                "type": "MultiLayerPerceptron",
-                "activation": "RELU",
+                "type": "CriticNetwork",
                 "in": 9,
+                "base_net": {
+                    "type": "MultiLayerPerceptron",
+                    "activation": "RELU",
+                },
                 "out": 1,
             },
         ),
@@ -160,24 +164,24 @@ class DDPGAgent(AbstractAgent):
 
         # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
         # columns of actions taken
-        state_action_values = self.critic_net(
-            torch.concat([batch.state, batch.action], 1))
+        state_action_values = self.critic_net(batch.state, batch.action)
 
         with torch.no_grad():
             # Compute V(s_{t+1}) for all next states.
             next_actions = self.actor_target_net(
                 batch.next_state).data.cpu().numpy()
-            next_state_action_values = self.critic_target_net(
-                torch.concat([batch.next_states, next_actions], 1))
+            next_state_action_values = \
+                self.critic_target_net(batch.next_state,
+                                       torch.tensor(next_actions, dtype=torch.float))
             # Compute the expected Q values
-            target_state_action_value = batch.reward + self.config[
+            target_state_action_value = batch.reward[:,None] + self.config[
                 "gamma"] * next_state_action_values
 
         # Compute losses
         critic_loss = self.loss_function(state_action_values,
                                          target_state_action_value)
-        policy_loss = -self.critic_net(
-            torch.concat([batch.state, self.actor_net(batch.state)], 1)).mean()
+        policy_loss = -self.critic_net(batch.state,
+                                       self.actor_net(batch.state)).mean()
         return policy_loss, critic_loss, target_state_action_value, batch
 
     def step_optimizers(self, policy_loss, critic_loss):
@@ -222,10 +226,10 @@ class DDPGAgent(AbstractAgent):
         :param actions: [a1; ...; aN] an array of actions
         :return: values:[Q1, ..., QN] the array of state action values for each state action pair
         """
-        state_actions = [torch.cat([state, action], 1) for state, action
-                         in zip(states, actions)]
-        return self.critic_net(torch.tensor(state_actions, dtype=torch.float)
-                               .to(self.device)).data.cpu().numpy()
+        return self.critic_net(
+            torch.tensor(states, dtype=torch.float).to(self.device),
+            torch.tensor(actions, dtype=torch.float).to(self.device),
+        ).data.cpu().numpy()
 
     def reset(self):
         pass

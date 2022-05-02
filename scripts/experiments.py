@@ -35,6 +35,10 @@ BENCHMARK_FILE = 'benchmark_summary'
 LOGGING_CONFIG = 'configs/logging.json'
 VERBOSE_CONFIG = 'configs/verbose.json'
 
+#TODO: remove when in need to fix deprecations
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 
 def main():
     opts = docopt(__doc__)
@@ -79,7 +83,7 @@ def evaluate(environment_config, agent_config, options):
         evaluation.test()
     else:
         evaluation.close()
-    return os.path.relpath(evaluation.monitor.directory)
+    return os.path.relpath(evaluation.run_directory)
 
 
 def benchmark(options):

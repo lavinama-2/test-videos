@@ -96,6 +96,28 @@ class ActorNetwork(BaseModule, Configurable):
         x = self.out_activation(x)
         return x
 
+class CriticNetwork(BaseModule, Configurable):
+    def __init__(self, config):
+        super().__init__()
+        Configurable.__init__(self, config)
+        self.config["base_net"]["in"] = self.config["in"]
+        self.config["base_net"]["out"] = self.config["out"]
+        self.base_net = model_factory(self.config["base_net"])
+
+    @classmethod
+    def default_config(cls):
+        return {"in": None,
+                "base_net": {"type": "MultiLayerPerceptron", "out": None},
+                "reshape": True,
+                "out": None}
+
+    def forward(self, state, action):
+        if self.config["reshape"]:
+            state = state.reshape(state.shape[0], -1)  # We expect a batch of vectors
+        x = torch.concat([state, action], 1)
+        x = self.base_net(x)
+        return x
+
 
 class DuelingNetwork(BaseModule, Configurable):
     def __init__(self, config):
@@ -120,7 +142,7 @@ class DuelingNetwork(BaseModule, Configurable):
 
     def forward(self, x):
         x = self.base_module(x)
-        value = self.value(x).expand(-1,  self.config["out"])
+        value = self.value(x).expand(-1, self.config["out"])
         advantage = self.advantage(x)
         return value + advantage - advantage.mean(1).unsqueeze(1).expand(-1,  self.config["out"])
 
@@ -440,6 +462,8 @@ def size_model_config(env, model_config):
         model_config["in_channels"] = int(obs_shape[0])
         model_config["in_height"] = int(obs_shape[1])
         model_config["in_width"] = int(obs_shape[2])
+    elif model_config["type"] == "CriticNetwork":
+        model_config["in"] = int(np.prod(obs_shape)) # TODO:+ action_space shape
     else:
         model_config["in"] = int(np.prod(obs_shape))
 
@@ -454,6 +478,8 @@ def model_factory(config: dict) -> nn.Module:
         return MultiLayerPerceptron(config)
     elif config["type"] == "ActorNetwork":
         return ActorNetwork(config)
+    elif config["type"] == "CriticNetwork":
+        return CriticNetwork(config)
     elif config["type"] == "DuelingNetwork":
         return DuelingNetwork(config)
     elif config["type"] == "ConvolutionalNetwork":
@@ -462,4 +488,3 @@ def model_factory(config: dict) -> nn.Module:
         return EgoAttentionNetwork(config)
     else:
         raise ValueError("Unknown model type")
-
