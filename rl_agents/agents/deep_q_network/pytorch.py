@@ -19,7 +19,8 @@ class DQNAgent(AbstractDQNAgent):
         self.target_net = model_factory(self.config["model"])
         self.target_net.load_state_dict(self.value_net.state_dict())
         self.target_net.eval()
-        logger.debug("Number of trainable parameters: {}".format(trainable_parameters(self.value_net)))
+        logger.debug(f"Number of trainable parameters: "
+                     f"{trainable_parameters(self.value_net)}")
         self.device = choose_device(self.config["device"])
         self.value_net.to(self.device)
         self.target_net.to(self.device)

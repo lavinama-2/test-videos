@@ -75,6 +75,27 @@ class MultiLayerPerceptron(BaseModule, Configurable):
             x = self.predict(x)
         return x
 
+class ActorNetwork(BaseModule, Configurable):
+    def __init__(self, config):
+        super().__init__()
+        Configurable.__init__(self, config)
+        self.config["base_net"]["in"] = self.config["in"]
+        self.config["base_net"]["out"] = self.config["out"]
+        self.base_net = model_factory(self.config["base_net"])
+        self.out_activation = activation_factory(self.config["out_activation"])
+
+    @classmethod
+    def default_config(cls):
+        return {"in": None,
+                "base_net": {"type": "MultiLayerPerceptron", "out": None},
+                "out_activation": "TANH",
+                "out": None}
+
+    def forward(self, x):
+        x = self.base_net(x)
+        x = self.out_activation(x)
+        return x
+
 
 class DuelingNetwork(BaseModule, Configurable):
     def __init__(self, config):
@@ -431,6 +452,8 @@ def size_model_config(env, model_config):
 def model_factory(config: dict) -> nn.Module:
     if config["type"] == "MultiLayerPerceptron":
         return MultiLayerPerceptron(config)
+    elif config["type"] == "ActorNetwork":
+        return ActorNetwork(config)
     elif config["type"] == "DuelingNetwork":
         return DuelingNetwork(config)
     elif config["type"] == "ConvolutionalNetwork":
