@@ -6,13 +6,13 @@
             "type": "MultiLayerPerceptron",
             "layers": [64, 64],
             "reshape": false,
-            "in": 7
+            "in": 9
         },
         "others_embedding_layer": {
             "type": "MultiLayerPerceptron",
             "layers": [64, 64],
             "reshape": false,
-            "in": 7
+            "in": 9
         },
         "self_attention_layer": null,
         "attention_layer": {
