@@ -1,13 +1,10 @@
 {
     "__class__": "<class 'rl_agents.agents.advantage_actor_critic.pytorch.AACAgent'>",
-    "models": {
-        "actor": {
+    "model": {
+        "type":"ActorCriticNetwork",
+        "base_net": {
             "type": "MultiLayerPerceptron",
-            "layers": [128, 128]
-        },
-        "critic": {
-            "type": "MultiLayerPerceptron",
-            "layers": [128, 128]
+            "layers": [64, 64]
         }
     },
     "gamma": 0.95,

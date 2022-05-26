@@ -57,6 +57,8 @@ class MultiLayerPerceptron(BaseModule, Configurable):
         self.layers = nn.ModuleList(layers_list)
         if self.config.get("out", None):
             self.predict = nn.Linear(sizes[-1], self.config["out"])
+            if self.config.get("out_activation", None):
+                self.out_activation = activation_factory(self.config["out_activation"])
 
     @classmethod
     def default_config(cls):
@@ -64,6 +66,7 @@ class MultiLayerPerceptron(BaseModule, Configurable):
                 "layers": [64, 64],
                 "activation": "RELU",
                 "reshape": "True",
+                "out_activation": None,
                 "out": None}
 
     def forward(self, x):
@@ -72,7 +75,10 @@ class MultiLayerPerceptron(BaseModule, Configurable):
         for layer in self.layers:
             x = self.activation(layer(x))
         if self.config.get("out", None):
-            x = self.predict(x)
+            if self.config.get("out_activation", None):
+                x = self.out_activation(self.predict(x))
+            else:
+                x = self.predict(x)
         return x
 
 class ActorNetwork(BaseModule, Configurable):
@@ -95,6 +101,27 @@ class ActorNetwork(BaseModule, Configurable):
         x = self.base_net(x)
         x = self.out_activation(x)
         return x
+
+class ActorCriticNetwork(BaseModule, Configurable):
+    def __init__(self, config):
+        super().__init__()
+        Configurable.__init__(self, config)
+        self.config["base_net"]["in"] = self.config["in"]
+        self.base_net = model_factory(self.config["base_net"])
+        base_out_size = self.base_net.config["layers"][-1]
+        self.pi = nn.Linear(base_out_size, self.config["out"])
+        self.v = nn.Linear(base_out_size, 1)
+
+    @classmethod
+    def default_config(cls):
+        return {"base_net": {"type": "MultiLayerPerceptron", "out": None},
+                "out": None}
+
+    def forward(self, x):
+        x = self.base_net(x)
+        pi = self.pi(x)
+        v = self.v(x)
+        return (pi, v)
 
 class CriticNetwork(BaseModule, Configurable):
     def __init__(self, config):
@@ -436,6 +463,8 @@ def activation_factory(activation_type):
         return F.relu
     elif activation_type == "TANH":
         return torch.tanh
+    elif activation_type == "SOFTMAX":
+        return torch.softmax
     else:
         raise ValueError("Unknown activation_type: {}".format(activation_type))
 
@@ -478,6 +507,8 @@ def model_factory(config: dict) -> nn.Module:
         return MultiLayerPerceptron(config)
     elif config["type"] == "ActorNetwork":
         return ActorNetwork(config)
+    elif config["type"] == "ActorCriticNetwork":
+        return ActorCriticNetwork(config)
     elif config["type"] == "CriticNetwork":
         return CriticNetwork(config)
     elif config["type"] == "DuelingNetwork":

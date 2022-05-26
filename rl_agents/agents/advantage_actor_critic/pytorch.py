@@ -27,37 +27,26 @@ class AACAgent(AbstractAgent):
         self.training = True
         self.previous_state = None
         # TODO: rework size_model_config to configure for continuous action spaces
-        size_model_config(self.env, self.config["models"]["actor"])
-        size_model_config(self.env, self.config["models"]["critic"])
+        size_model_config(self.env, self.config["model"])
 
-        self.actor_net = model_factory(self.config["models"]["actor"])
-
-        self.critic_net = model_factory(self.config["models"]["critic"])
-        self.critic_target_net = model_factory(self.config["models"]["critic"])
-        self.critic_target_net.load_state_dict(self.critic_net.state_dict())
-        self.critic_target_net.eval()
+        self.actor_critic_net = model_factory(self.config["model"])
+        self.actor_critic_target_net = model_factory(self.config["model"])
+        self.actor_critic_target_net.load_state_dict(self.actor_critic_net.state_dict())
+        self.actor_critic_target_net.eval()
 
         self.device = choose_device(self.config["device"])
-        self.actor_net.to(self.device)
-        self.critic_net.to(self.device)
-        self.critic_target_net.to(self.device)
+        self.actor_critic_net.to(self.device)
+        self.actor_critic_target_net.to(self.device)
         self.loss_function = loss_function_factory(self.config["loss_function"])
-        self.actor_optimizer = optimizer_factory(
+        self.optimizer = optimizer_factory(
             self.config["optimizer"]["type"],
-            self.actor_net.parameters(),
-            **self.config["optimizer"])
-        self.critic_optimizer = optimizer_factory(
-            self.config["optimizer"]["type"],
-            self.critic_net.parameters(),
+            self.actor_critic_net.parameters(),
             **self.config["optimizer"])
         self.steps = 0
 
     @classmethod
     def default_config(cls):
-        return dict(models=dict(
-            actor=dict(type="EgoAttentionNetwork"),
-            critic=dict(type="MultiLayerPerceptron"),
-        ),
+        return dict(model=dict(type="ActorCriticNetwork"),
             optimizer=dict(type="ADAM",
                            lr=5e-4,
                            weight_decay=0,
@@ -139,14 +128,14 @@ class AACAgent(AbstractAgent):
         if not isinstance(batch.state, torch.Tensor):
             # logger.info("Casting the batch to torch.tensor")
             state = torch.cat(
-                tuple(torch.tensor([batch.state], dtype=torch.float))).to(
+                tuple(torch.tensor(np.array([batch.state]), dtype=torch.float))).to(
                 self.device)
             action = torch.tensor(batch.action, dtype=torch.float).to(
                 self.device)
             reward = torch.tensor(batch.reward, dtype=torch.float).to(
                 self.device)
             next_state = torch.cat(
-                tuple(torch.tensor([batch.next_state], dtype=torch.float))).to(
+                tuple(torch.tensor(np.array([batch.next_state]), dtype=torch.float))).to(
                 self.device)
             terminal = torch.tensor(batch.terminal, dtype=torch.bool).to(
                 self.device)
@@ -155,34 +144,39 @@ class AACAgent(AbstractAgent):
 
         # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
         # columns of actions taken
-        state_values = self.critic_net(batch.state)
+        action_probs, state_values = self.actor_critic_net(batch.state)
 
         with torch.no_grad():
             # Compute V(s_{t+1}) for all next states.
-            next_state_values = \
-                self.critic_target_net(batch.next_state)
+            _, next_state_values = \
+                self.actor_critic_target_net(batch.next_state)
             # Compute the expected Q values
             target_state_values = batch.reward[:,None] + self.config["gamma"] * next_state_values
             # Compute the probabilities of next actions
-            actions_distribution = torch.distributions.Categorical(probs=self.actor_net(batch.state))
-            # Compute advantage of current actions
-            advantage = target_state_values - state_values
+            actions_distribution = torch.distributions.Categorical(probs=torch.softmax(action_probs, dim=-1))
 
         # Compute losses
-        critic_loss = self.loss_function(state_values,
-                                         target_state_values)
-        policy_loss = -(actions_distribution.log_prob(batch.action) * advantage).mean()
+        critic_loss = self.loss_function(state_values, target_state_values)
+        # Compute advantage of current actions
+        advantage = target_state_values - state_values
+        action_log_probability = actions_distribution.log_prob(batch.action)[:,None]
+        policy_loss = -torch.mean(action_log_probability * advantage)
         return policy_loss, critic_loss, target_state_values, batch
 
     def step_optimizers(self, policy_loss, critic_loss):
-        step_optimizer(self.critic_net, self.critic_optimizer, critic_loss)
-        step_optimizer(self.actor_net, self.actor_optimizer, policy_loss)
+        self.optimizer.zero_grad()
+        (policy_loss + critic_loss).backward()
+        """
+        for param in self.actor_critic_net.parameters():
+            param.grad.data.clamp_(-1, 1)
+        """
+        self.optimizer.step()
 
     def update_target_networks(self):
         # TODO: consider using lossy target updates instead (with tau=0.1)
         self.steps += 1
         if self.steps % self.config["target_update"] == 0:
-            self.critic_target_net.load_state_dict(self.critic_net.state_dict())
+            self.actor_critic_target_net.load_state_dict(self.actor_critic_net.state_dict())
 
     def get_action(self, state):
         """
@@ -207,7 +201,7 @@ class AACAgent(AbstractAgent):
         :param states: [s1; ...; sN] an array of states
         :return: values:[[Q11, ..., Q1n]; ...] the array of all action values for each state
         """
-        return self.actor_net(torch.tensor(np.array(states),dtype=torch.float).to(self.device)).data.cpu().numpy()
+        return self.actor_critic_net(torch.tensor(np.array(states),dtype=torch.float).to(self.device))[0].data.cpu().numpy()
 
     def reset(self):
         pass
@@ -216,10 +210,8 @@ class AACAgent(AbstractAgent):
         return self.exploration_policy.seed(seed)
 
     def save(self, filename):
-        state = {'actor_dict': self.actor_net.state_dict(),
-                 'actor_optimizer': self.actor_optimizer.state_dict(),
-                 'critic_dict': self.critic_net.state_dict(),
-                 'critic_optimizer': self.critic_optimizer.state_dict()
+        state = {'actor_critic_dict': self.actor_critic_net.state_dict(),
+                 'optimizer': self.optimizer.state_dict(),
                  }
         torch.save(state, filename)
         return filename
@@ -229,9 +221,9 @@ class AACAgent(AbstractAgent):
         self.actor_net.load_state_dict(checkpoint['actor_dict'])
         self.actor_optimizer.load_state_dict(checkpoint['actor_optimizer'])
 
-        self.critic_net.load_state_dict(checkpoint['critic_dict'])
-        self.critic_target_net.load_state_dict(checkpoint['critic_dict'])
-        self.critic_optimizer.load_state_dict(checkpoint['critic_optimizer'])
+        self.actor_critic_net.load_state_dict(checkpoint['critic_dict'])
+        self.actor_critic_target_net.load_state_dict(checkpoint['critic_dict'])
+        self.optimizer.load_state_dict(checkpoint['critic_optimizer'])
         return filename
 
     def set_writer(self, writer):
@@ -241,9 +233,9 @@ class AACAgent(AbstractAgent):
             self.env.observation_space.spaces[0].shape
         model_input = torch.zeros((1, *obs_shape), dtype=torch.float,
                                   device=self.device)
-        self.writer.add_graph(self.actor_net, input_to_model=(model_input,)),
+        self.writer.add_graph(self.actor_critic_net, input_to_model=(model_input,)),
         self.writer.add_scalar("agent/trainable_parameters",
-                               trainable_parameters(self.actor_net), 0)
+                               trainable_parameters(self.actor_critic_net), 0)
 
     def set_time(self, time):
         self.exploration_policy.set_time(time)
@@ -252,12 +244,3 @@ class AACAgent(AbstractAgent):
         self.training = False
         self.config['exploration']['method'] = "Greedy"
         self.exploration_policy = exploration_factory(self.config["exploration"], self.env.action_space)
-
-
-def step_optimizer(model_net, optimizer, loss):
-    # Optimize the model
-    optimizer.zero_grad()
-    loss.backward()
-    for param in model_net.parameters():
-        param.grad.data.clamp_(-1, 1)
-    optimizer.step()
