@@ -80,7 +80,7 @@ class DQNAgent(AbstractDQNAgent):
         return values.data.cpu().numpy(), actions.data.cpu().numpy()
 
     def get_batch_state_action_values(self, states):
-        return self.value_net(torch.tensor(np.array(states),dtype=torch.float)).to(self.device).data.cpu().numpy()
+        return self.value_net(torch.tensor(np.array(states),dtype=torch.float).to(self.device)).data.cpu().numpy()
 
     def save(self, filename):
         state = {'state_dict': self.value_net.state_dict(),
