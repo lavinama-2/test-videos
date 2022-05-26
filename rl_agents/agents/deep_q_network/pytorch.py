@@ -1,4 +1,6 @@
 import logging
+
+import numpy as np
 import torch
 from gym import spaces
 
@@ -78,7 +80,7 @@ class DQNAgent(AbstractDQNAgent):
         return values.data.cpu().numpy(), actions.data.cpu().numpy()
 
     def get_batch_state_action_values(self, states):
-        return self.value_net(torch.tensor(states, dtype=torch.float).to(self.device)).data.cpu().numpy()
+        return self.value_net(torch.from_numpy(np.array(states)).float()).to(self.device).data.cpu().numpy()
 
     def save(self, filename):
         state = {'state_dict': self.value_net.state_dict(),
