@@ -1,0 +1,10 @@
+{
+    "base_config": "configs/IntersectionEnv/agents/AACAgent/ego_attention.json",
+    "models": {
+        "actor": {
+            "attention_layer": {
+                "heads": 2
+            }
+        }
+    }
+}
