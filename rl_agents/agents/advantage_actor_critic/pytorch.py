@@ -207,7 +207,7 @@ class AACAgent(AbstractAgent):
         :param states: [s1; ...; sN] an array of states
         :return: values:[[Q11, ..., Q1n]; ...] the array of all action values for each state
         """
-        return self.actor_net(torch.from_numpy(np.array(states)).float()).data.cpu().numpy()
+        return self.actor_net(torch.tensor(np.array(states),dtype=torch.float)).data.cpu().numpy()
 
     def reset(self):
         pass
