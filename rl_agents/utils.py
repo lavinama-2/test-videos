@@ -69,6 +69,22 @@ def zip_with_singletons(*args):
     return zip(*(arg if isinstance(arg, list) else itertools.repeat(arg) for arg in args))
 
 
+def unzip_nested_tuples(x):
+    """
+        Unzips lists of tuples of possibly more tuples, separating based on the
+        inner-most tuple structure
+
+    :param args: arguments to zip x
+    :return: unzipped lists [x11, x21, ..., xn1], ... [x1m, x2m, ..., xnm]
+    """
+    left, right = [], []
+    for tup in x:
+        for tup1 in tup:
+            left.append(tup1[0])
+            right.append(tup1[1])
+    return [tuple(left)], [tuple(right)]
+
+
 def kullback_leibler(p: np.ndarray, q: np.ndarray) -> float:
     """
         KL between two categorical distributions

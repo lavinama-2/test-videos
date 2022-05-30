@@ -13,7 +13,7 @@ import rl_agents.trainer.logger
 from rl_agents.agents.common.factory import load_environment, load_agent
 from rl_agents.agents.common.graphics import AgentGraphics
 from rl_agents.agents.common.memory import Transition
-from rl_agents.utils import near_split, zip_with_singletons
+from rl_agents.utils import near_split, zip_with_singletons, unzip_nested_tuples
 from rl_agents.configuration import serialize
 from rl_agents.trainer.graphics import RewardViewer
 
@@ -166,6 +166,12 @@ class Evaluation(object):
         if not actions:
             raise Exception("The agent did not plan any action")
 
+        action_probs_important = isinstance(actions[0], tuple) and \
+                                 isinstance(actions[0][0], tuple)
+        if action_probs_important:
+            actions, action_probs = unzip_nested_tuples(actions)
+            action_prob = action_probs[0]
+
         # Forward the actions to the environment viewer
         try:
             self.env.unwrapped.viewer.set_agent_action_sequence(actions)
@@ -178,7 +184,10 @@ class Evaluation(object):
 
         # Record the experience.
         try:
-            self.agent.record(previous_observation, action, reward, self.observation, terminal, info)
+            if action_probs_important:
+                self.agent.record(previous_observation, action_prob, reward, self.observation, terminal, info)
+            else:
+                self.agent.record(previous_observation, action, reward, self.observation, terminal, info)
         except NotImplementedError:
             pass
 

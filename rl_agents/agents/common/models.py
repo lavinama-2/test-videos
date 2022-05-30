@@ -81,6 +81,7 @@ class MultiLayerPerceptron(BaseModule, Configurable):
                 x = self.predict(x)
         return x
 
+
 class ActorNetwork(BaseModule, Configurable):
     def __init__(self, config):
         super().__init__()
@@ -94,13 +95,14 @@ class ActorNetwork(BaseModule, Configurable):
     def default_config(cls):
         return {"in": None,
                 "base_net": {"type": "MultiLayerPerceptron", "out": None},
-                "out_activation": "TANH",
+                "out_activation": "SOFTMAX",
                 "out": None}
 
     def forward(self, x):
         x = self.base_net(x)
         x = self.out_activation(x)
         return x
+
 
 class ActorCriticNetwork(BaseModule, Configurable):
     def __init__(self, config):
@@ -123,24 +125,30 @@ class ActorCriticNetwork(BaseModule, Configurable):
         v = self.v(x)
         return (pi, v)
 
+
 class CriticNetwork(BaseModule, Configurable):
     def __init__(self, config):
         super().__init__()
         Configurable.__init__(self, config)
-        self.config["base_net"]["in"] = self.config["in"]
-        self.config["base_net"]["out"] = self.config["out"]
+        input_dim = self.config["in"] + self.config["n_actions"]
+        if self.config.get("n_agents", None):
+            # Centralised MultiAgent Critic
+            input_dim *= self.config["n_agents"]
+        self.config["base_net"]["in"] = input_dim
+        self.config["base_net"]["out"] = 1  # Q networks return only one value
         self.base_net = model_factory(self.config["base_net"])
 
     @classmethod
     def default_config(cls):
         return {"in": None,
+                "n_agents": None,
+                "n_actions": None,
                 "base_net": {"type": "MultiLayerPerceptron", "out": None},
-                "reshape": True,
-                "out": None}
+                }
 
     def forward(self, state, action):
-        if self.config["reshape"]:
-            state = state.reshape(state.shape[0], -1)  # We expect a batch of vectors
+        state = state.flatten(1)
+        action = action.flatten(1)
         x = torch.concat([state, action], 1)
         x = self.base_net(x)
         return x
@@ -464,9 +472,13 @@ def activation_factory(activation_type):
     elif activation_type == "TANH":
         return torch.tanh
     elif activation_type == "SOFTMAX":
-        return torch.softmax
+        return softmax
     else:
         raise ValueError("Unknown activation_type: {}".format(activation_type))
+
+
+def softmax(x):
+    return torch.softmax(x, dim=-1)
 
 
 def trainable_parameters(model):
@@ -487,19 +499,29 @@ def size_model_config(env, model_config):
         obs_shape = env.observation_space.shape
     elif isinstance(env.observation_space, spaces.Tuple):
         obs_shape = env.observation_space.spaces[0].shape
+    else:
+        raise NotImplementedError(
+            "No way to handle observation space of type" + env.observation_space)
+
+    if isinstance(env.action_space, spaces.Discrete):
+        n_actions = env.action_space.n
+    elif isinstance(env.action_space, spaces.Tuple):
+        n_actions = env.action_space.spaces[0].n
+    else:
+        raise NotImplementedError(
+            "No way to handle action space of type" + env.action_space)
+
     if model_config["type"] == "ConvolutionalNetwork":  # Assume CHW observation space
         model_config["in_channels"] = int(obs_shape[0])
         model_config["in_height"] = int(obs_shape[1])
         model_config["in_width"] = int(obs_shape[2])
-    elif model_config["type"] == "CriticNetwork":
-        model_config["in"] = int(np.prod(obs_shape)) # TODO:+ action_space shape
     else:
         model_config["in"] = int(np.prod(obs_shape))
 
-    if isinstance(env.action_space, spaces.Discrete):
-        model_config["out"] = env.action_space.n
-    elif isinstance(env.action_space, spaces.Tuple):
-        model_config["out"] = env.action_space.spaces[0].n
+    if model_config["type"] == "CriticNetwork":
+        model_config["n_actions"] = n_actions
+
+    model_config["out"] = n_actions
 
 
 def model_factory(config: dict) -> nn.Module:
