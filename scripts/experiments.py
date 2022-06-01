@@ -35,10 +35,6 @@ BENCHMARK_FILE = 'benchmark_summary'
 LOGGING_CONFIG = 'configs/logging.json'
 VERBOSE_CONFIG = 'configs/verbose.json'
 
-#TODO: remove when in need to fix deprecations
-import warnings
-warnings.filterwarnings("ignore", category=DeprecationWarning)
-
 
 def main():
     opts = docopt(__doc__)

@@ -21,8 +21,7 @@ class DQNAgent(AbstractDQNAgent):
         self.target_net = model_factory(self.config["model"])
         self.target_net.load_state_dict(self.value_net.state_dict())
         self.target_net.eval()
-        logger.debug(f"Number of trainable parameters: "
-                     f"{trainable_parameters(self.value_net)}")
+        logger.debug("Number of trainable parameters: {}".format(trainable_parameters(self.value_net)))
         self.device = choose_device(self.config["device"])
         self.value_net.to(self.device)
         self.target_net.to(self.device)
@@ -44,10 +43,10 @@ class DQNAgent(AbstractDQNAgent):
         # Compute concatenate the batch elements
         if not isinstance(batch.state, torch.Tensor):
             # logger.info("Casting the batch to torch.tensor")
-            state = torch.cat(tuple(torch.tensor([batch.state], dtype=torch.float))).to(self.device)
+            state = torch.tensor(np.array(batch.state), dtype=torch.float).to(self.device)
             action = torch.tensor(batch.action, dtype=torch.long).to(self.device)
             reward = torch.tensor(batch.reward, dtype=torch.float).to(self.device)
-            next_state = torch.cat(tuple(torch.tensor([batch.next_state], dtype=torch.float))).to(self.device)
+            next_state = torch.tensor(np.array(batch.next_state), dtype=torch.float).to(self.device)
             terminal = torch.tensor(batch.terminal, dtype=torch.bool).to(self.device)
             batch = Transition(state, action, reward, next_state, terminal, batch.info)
 
@@ -80,7 +79,7 @@ class DQNAgent(AbstractDQNAgent):
         return values.data.cpu().numpy(), actions.data.cpu().numpy()
 
     def get_batch_state_action_values(self, states):
-        return self.value_net(torch.tensor(np.array(states),dtype=torch.float).to(self.device)).data.cpu().numpy()
+        return self.value_net(torch.as_tensor(np.array(states), dtype=torch.float).to(self.device)).data.cpu().numpy()
 
     def save(self, filename):
         state = {'state_dict': self.value_net.state_dict(),
