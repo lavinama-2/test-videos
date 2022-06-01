@@ -2,6 +2,7 @@ import logging
 
 import numpy as np
 import torch
+from itertools import combinations
 from gym import spaces
 
 from rl_agents.agents.common.abstract import AbstractAgent
@@ -138,20 +139,12 @@ class MADDPGAgent(AbstractAgent):
         # Compute concatenate the batch elements
         if not isinstance(batch.state, torch.Tensor):
             # logger.info("Casting the batch to torch.tensor")
-            state = torch.cat(
-                tuple(torch.tensor(np.array([batch.state]), dtype=torch.float))).to(
-                self.device)
-            action = torch.tensor(np.array(batch.action), dtype=torch.float).to(
-                self.device)
-            reward = torch.tensor(batch.reward, dtype=torch.float).to(
-                self.device)
-            next_state = torch.cat(
-                tuple(torch.tensor(np.array([batch.next_state]), dtype=torch.float))).to(
-                self.device)
-            terminal = torch.tensor(batch.terminal, dtype=torch.bool).to(
-                self.device)
-            batch = Transition(state, action, reward, next_state, terminal,
-                               batch.info)
+            state = torch.tensor(np.array(batch.state), dtype=torch.float).to(self.device)
+            action = torch.tensor(np.array(batch.action), dtype=torch.float).to(self.device)
+            reward = torch.tensor(batch.reward, dtype=torch.float).to(self.device)
+            next_state = torch.tensor(np.array(batch.next_state ), dtype=torch.float).to(self.device)
+            terminal = torch.tensor(batch.terminal, dtype=torch.bool).to(self.device)
+            batch = Transition(state, action, reward, next_state, terminal, batch.info)
 
         # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
         # columns of actions taken
@@ -159,15 +152,11 @@ class MADDPGAgent(AbstractAgent):
 
         with torch.no_grad():
             # Compute V(s_{t+1}) for all next states.
-            next_actions = torch.cat(
-                [self.actor_target_net(next_state).unsqueeze(1)
-                 for next_state in
-                 batch.next_state.transpose(0, 1)], dim=1)
-            next_state_action_values = \
-                self.critic_target_net(batch.next_state, next_actions)
+            next_actions = torch.cat([self.actor_target_net(next_state).unsqueeze(1)
+                 for next_state in batch.next_state.transpose(0, 1)], dim=1)
+            next_state_action_values = self.critic_target_net(batch.next_state, next_actions)
             # Compute the expected Q values
-            target_state_action_value = batch.reward[:,None] + self.config[
-                "gamma"] * next_state_action_values
+            target_state_action_value = batch.reward[:,None] + self.config["gamma"] * next_state_action_values
 
             # Find current policy's actions
             actor_action = torch.cat([self.actor_net(state).unsqueeze(1)
