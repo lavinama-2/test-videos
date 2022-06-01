@@ -2,7 +2,6 @@ import logging
 
 import numpy as np
 import torch
-from itertools import combinations
 from gym import spaces
 
 from rl_agents.agents.common.abstract import AbstractAgent
@@ -12,7 +11,7 @@ from rl_agents.agents.common.models import size_model_config, model_factory, \
 from rl_agents.agents.common.optimizers import loss_function_factory, \
     optimizer_factory
 from rl_agents.agents.common.exploration.abstract import exploration_factory
-from rl_agents.agents.common.utils import choose_device
+from rl_agents.agents.common.utils import choose_device, each_agent_ego_rest
 
 logger = logging.getLogger(__name__)
 
@@ -142,32 +141,45 @@ class MADDPGAgent(AbstractAgent):
             state = torch.tensor(np.array(batch.state), dtype=torch.float).to(self.device)
             action = torch.tensor(np.array(batch.action), dtype=torch.float).to(self.device)
             reward = torch.tensor(batch.reward, dtype=torch.float).to(self.device)
-            next_state = torch.tensor(np.array(batch.next_state ), dtype=torch.float).to(self.device)
+            next_state = torch.tensor(np.array(batch.next_state), dtype=torch.float).to(self.device)
             terminal = torch.tensor(batch.terminal, dtype=torch.bool).to(self.device)
             batch = Transition(state, action, reward, next_state, terminal, batch.info)
 
-        # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
-        # columns of actions taken
-        state_action_values = self.critic_net(batch.state, batch.action)
+        states = batch.state.split(1, dim=1)
+        actions = batch.action.split(1, dim=1)
+        next_states = batch.next_state.split(1, dim=1)
 
-        with torch.no_grad():
-            # Compute V(s_{t+1}) for all next states.
-            next_actions = torch.cat([self.actor_target_net(next_state).unsqueeze(1)
-                 for next_state in batch.next_state.transpose(0, 1)], dim=1)
-            next_state_action_values = self.critic_target_net(batch.next_state, next_actions)
-            # Compute the expected Q values
-            target_state_action_value = batch.reward[:,None] + self.config["gamma"] * next_state_action_values
+        for (ego_state, rest_states), (ego_action, rest_actions), (ego_next_state, rest_next_states) in \
+                zip(each_agent_ego_rest(states),
+                    each_agent_ego_rest(actions),
+                    each_agent_ego_rest(next_states)):
 
-            # Find current policy's actions
-            actor_action = torch.cat([self.actor_net(state).unsqueeze(1)
-                                      for state in torch.transpose(batch.state, 0, 1)], dim=1)
+            full_state = torch.cat([ego_state, *rest_states], dim=1).to(self.device)
+            full_action = torch.cat([ego_action, *rest_actions], dim=1).to(self.device)
+            full_next_state = torch.cat([ego_next_state, *rest_next_states], dim=1).to(self.device)
 
-        # Compute losses
-        critic_loss = self.loss_function(state_action_values,
-                                         target_state_action_value)
-        step_optimizer(self.critic_net, self.critic_optimizer, critic_loss)
-        policy_loss = -self.critic_net(batch.state, actor_action).mean()
-        step_optimizer(self.actor_net, self.actor_optimizer, policy_loss)
+            # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
+            # columns of actions taken
+            state_action_values = self.critic_net(full_state, full_action)
+
+            with torch.no_grad():
+                # Compute V(s_{t+1}) for all next states.
+                next_action = torch.cat([self.actor_net(next_state).unsqueeze(1)
+                                          for next_state in torch.transpose(full_next_state, 0, 1)], dim=1).to(self.device)
+                next_state_action_values = self.critic_target_net(full_next_state, next_action)
+                # Compute the expected Q values
+                target_state_action_value = batch.reward[:,None] + self.config["gamma"] * next_state_action_values
+
+                # Find current policy's actions
+                actor_action = torch.cat([self.actor_net(state).unsqueeze(1)
+                                          for state in torch.transpose(full_state, 0, 1)], dim=1).to(self.device)
+
+            # Compute losses
+            critic_loss = self.loss_function(state_action_values,
+                                             target_state_action_value)
+            step_optimizer(self.critic_net, self.critic_optimizer, critic_loss)
+            policy_loss = -self.critic_net(full_state, actor_action).mean()
+            step_optimizer(self.actor_net, self.actor_optimizer, policy_loss)
 
     def update_target_networks(self):
         self.steps += 1

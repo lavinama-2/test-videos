@@ -12,7 +12,7 @@
             "type":"CriticNetwork",
             "base_net": {
                 "type": "MultiLayerPerceptron",
-                "layers": [128, 128]
+                "layers": [128, 128, 128]
             }
         }
     },

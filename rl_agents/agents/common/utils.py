@@ -2,6 +2,7 @@ import logging
 import os
 import re
 import shutil
+from itertools import combinations
 
 import numpy as np
 from subprocess import PIPE, run, check_output
@@ -102,3 +103,7 @@ def get_memory(pid=None):
     result = run(command, stdout=PIPE, stderr=PIPE, universal_newlines=True, shell=True).stdout
     m = re.findall("\| *[0-9] *" + str(pid) + " *C *.*python.*? +([0-9]+).*\|", result, re.MULTILINE)
     return [int(mem) for mem in m]
+
+
+def each_agent_ego_rest(elements):
+    return zip(reversed(elements), combinations(elements, len(elements) - 1))
