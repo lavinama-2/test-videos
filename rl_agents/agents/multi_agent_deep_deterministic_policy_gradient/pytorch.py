@@ -164,7 +164,7 @@ class MADDPGAgent(AbstractAgent):
 
             with torch.no_grad():
                 # Compute V(s_{t+1}) for all next states.
-                next_action = torch.cat([self.actor_net(next_state).unsqueeze(1)
+                next_action = torch.cat([self.actor_target_net(next_state).unsqueeze(1)
                                           for next_state in torch.transpose(full_next_state, 0, 1)], dim=1).to(self.device)
                 next_state_action_values = self.critic_target_net(full_next_state, next_action)
                 # Compute the expected Q values
@@ -234,11 +234,12 @@ class MADDPGAgent(AbstractAgent):
     def load(self, filename):
         checkpoint = torch.load(filename, map_location=self.device)
         self.actor_net.load_state_dict(checkpoint['actor_dict'])
+        self.actor_target_net.load_state_dict(checkpoint['actor_dict'])
         self.actor_optimizer.load_state_dict(checkpoint['actor_optimizer'])
 
-        self.actor_net.load_state_dict(checkpoint['critic_dict'])
-        self.actor_target_net.load_state_dict(checkpoint['critic_dict'])
-        self.actor_optimizer.load_state_dict(checkpoint['critic_optimizer'])
+        self.critic_net.load_state_dict(checkpoint['critic_dict'])
+        self.critic_target_net.load_state_dict(checkpoint['critic_dict'])
+        self.critic_optimizer.load_state_dict(checkpoint['critic_optimizer'])
         return filename
 
     def set_writer(self, writer):
