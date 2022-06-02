@@ -147,9 +147,8 @@ class CriticNetwork(BaseModule, Configurable):
                 }
 
     def forward(self, state, action):
-        state = state.flatten(1)
-        action = action.flatten(1)
-        x = torch.concat([state, action], 1)
+        state = state[:,:,0,:]
+        x = torch.concat([state, action], dim=-1)
         x = self.base_net(x)
         return x
 
@@ -515,6 +514,8 @@ def size_model_config(env, model_config):
         model_config["in_channels"] = int(obs_shape[0])
         model_config["in_height"] = int(obs_shape[1])
         model_config["in_width"] = int(obs_shape[2])
+    elif model_config["type"] == "CriticNetwork":
+        model_config["in"] = obs_shape[-1]
     else:
         model_config["in"] = int(np.prod(obs_shape))
 
