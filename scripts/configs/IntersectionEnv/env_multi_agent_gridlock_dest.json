@@ -1,5 +1,5 @@
 {
-    "id": "deadlock-v0",
+    "id": "hash-deadlock-v0",
     "import_module": "highway_env",
     "observation": {
         "type": "MultiAgentObservation",
