@@ -170,14 +170,12 @@ class MADDPGAgent(AbstractAgent):
                 # Compute the expected Q values
                 target_state_action_value = batch.reward[:,None] + self.config["gamma"] * next_state_action_values
 
-                # Find current policy's actions
-                actor_action = torch.cat([self.actor_net(state).unsqueeze(1)
-                                          for state in torch.transpose(full_state, 0, 1)], dim=1).to(self.device)
-
             # Compute losses
             critic_loss = self.loss_function(state_action_values,
                                              target_state_action_value)
             step_optimizer(self.critic_net, self.critic_optimizer, critic_loss)
+            # Find current policy's actions
+            actor_action = torch.cat([self.actor_net(ego_state.squeeze(1)).unsqueeze(1), *rest_actions], dim=1)
             policy_loss = -self.critic_net(full_state, actor_action).mean()
             step_optimizer(self.actor_net, self.actor_optimizer, policy_loss)
 
