@@ -223,9 +223,12 @@ class MADDPGAgent(AbstractAgent):
         return self.exploration_policy.seed(seed)
 
     def save(self, filename):
-        state = {'actor_critic_dict': self.actor_net.state_dict(),
-                 'optimizer': self.actor_optimizer.state_dict(),
-                 }
+        state = {
+            'actor_dict': self.actor_net.state_dict(),
+            'actor_optimizer': self.actor_optimizer.state_dict(),
+            'critic_dict': self.critic_net.state_dict(),
+            'critic_optimizer': self.critic_optimizer.state_dict(),
+        }
         torch.save(state, filename)
         return filename
 
