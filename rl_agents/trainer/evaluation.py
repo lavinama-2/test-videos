@@ -51,7 +51,7 @@ class Evaluation(object):
         :param Path directory: Workspace directory path
         :param Path run_directory: Run directory path
         :param int num_episodes: Number of episodes run
-        !param training: Whether the agent is being trained or tested
+        :param training: Whether the agent is being trained or tested
         :param sim_seed: The seed used for the environment/agent randomness source
         :param recover: Recover the agent parameters from a file.
                         - If True, it the default latest save will be used.
@@ -204,6 +204,8 @@ class Evaluation(object):
         batch_sizes = near_split(self.num_episodes * episode_duration, size_bins=self.agent.config["batch_size"])
         self.agent.reset()
         for batch, batch_size in enumerate(batch_sizes):
+            start_time = time.time()
+            
             logger.info("[BATCH={}/{}]---------------------------------------".format(batch+1, len(batch_sizes)))
             logger.info("[BATCH={}/{}][run_batched_episodes] #samples={}".format(batch+1, len(batch_sizes),
                                                                                  len(self.agent.memory)))
@@ -235,10 +237,11 @@ class Evaluation(object):
                     results = pool.starmap(Evaluation.collect_samples, workers_params)
             trajectories = [trajectory for worker in results for trajectory in worker]
 
+            duration = time.time() - start_time
             # Fill memory
             for trajectory in trajectories:
                 if trajectory[-1].terminal:  # Check whether the episode was properly finished before logging
-                    self.after_all_episodes(episode, [transition.reward for transition in trajectory])
+                    self.after_all_episodes(episode, [transition.reward for transition in trajectory], duration)
                 episode += 1
                 [self.agent.record(*transition) for transition in trajectory]
 
