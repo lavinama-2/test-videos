@@ -1,5 +1,19 @@
 # rl-agents
 
+## TO-DO:
+- [ ] Check if there's a way in highway-env to see if an agent has satisfied the rules of the road.
+
+### Bugs that need to be fixed:
+1. When running
+```bash
+python experiments.py evaluate configs/IntersectionEnv/env_multi_agent_dest.json configs/IntersectionEnv/agents/MADDPGAgent/ego_attention_2h.json --test --recover-from=../../project/MADDPGAgent/ego_attention_2h/checkpoint-best.tar--episodes=10
+```
+  Does not work:
+    * ego_attention_2h
+  Works:
+    * ego_attention
+    * self_attention
+
 A collection of Reinforcement Learning agents
 
 ![build](https://github.com/eleurent/rl-agents/workflows/build/badge.svg)
