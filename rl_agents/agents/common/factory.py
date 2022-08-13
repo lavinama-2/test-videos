@@ -72,8 +72,8 @@ def load_environment(env_config):
     if env_config.get("import_module", None):
         __import__(env_config["import_module"])
     try:
+        print("id", env_config['id'])
         env = gym.make(env_config['id'])
-        print(env_config['id'])
         # Save env module in order to be able to import it again
         env.import_module = env_config.get("import_module", None)
     except KeyError:
