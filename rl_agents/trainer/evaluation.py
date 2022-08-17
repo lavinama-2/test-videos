@@ -71,7 +71,10 @@ class Evaluation(object):
         self.close_env = close_env
         self.display_env = display_env
 
+        # Attributes added
         self.metrics = {} # dict stores perf metrics
+        self.info = None
+        ###
 
         self.directory = Path(directory or self.default_directory)
         self.run_directory = self.directory / (run_directory or self.default_run_directory)
@@ -147,7 +150,8 @@ class Evaluation(object):
                 # Step until a terminal step is reached
                 reward, terminal = self.step()
                 rewards.append(reward)
-
+                
+                self.save_metrics() # Save metrics
                 # Catch interruptions
                 try:
                     if self.env.unwrapped.done:
@@ -183,8 +187,7 @@ class Evaluation(object):
 
         # Step the environment
         previous_observation, action = self.observation, actions[0]
-        self.observation, reward, terminal, info = self.wrapped_env.step(action)
-        self.save_metrics(info)
+        self.observation, reward, terminal, self.info = self.wrapped_env.step(action)
 
         # Record the experience.
         try:
@@ -372,13 +375,16 @@ class Evaluation(object):
         with file.open('w') as f:
             json.dump(metadata, f, sort_keys=True, indent=4)
     
-    def save_metrics(self, info):
+    def save_metrics(self):
+        """
+        Record the number of times each car has crashed
+        """
         if self.metrics == {}:
-            for name in list(info["agent_names"]):
+            for name in list(self.info["agent_names"]):
                 self.metrics[name] = 0
-        for idx, done in enumerate(list(info["agents_dones"])):
-            name = info["agent_names"][idx]
-            if done:
+        for idx, crashed in enumerate(list(self.info["agents_crashed"])):
+            name = self.info["agent_names"][idx]
+            if crashed:
                 self.metrics[name] += 1
         self.write_metrics()
     
