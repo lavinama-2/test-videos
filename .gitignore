@@ -19,6 +19,7 @@ _build
 
 # Outputs
 project/*
+**/run_**/*
 
 # VSCode settings
 **/.vscode/*

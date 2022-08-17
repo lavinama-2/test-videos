@@ -35,7 +35,6 @@ BENCHMARK_FILE = 'benchmark_summary'
 LOGGING_CONFIG = 'configs/logging.json'
 VERBOSE_CONFIG = 'configs/verbose.json'
 
-
 def main():
     opts = docopt(__doc__)
     if opts['evaluate']:
@@ -43,7 +42,6 @@ def main():
             evaluate(opts['<environment>'], opts['<agent>'], opts)
     elif opts['benchmark']:
         benchmark(opts)
-
 
 def evaluate(environment_config, agent_config, options):
     """
@@ -81,7 +79,6 @@ def evaluate(environment_config, agent_config, options):
         evaluation.close()
     return os.path.relpath(evaluation.run_directory)
 
-
 def benchmark(options):
     """
         Run the evaluations of several agents interacting in several environments.
@@ -115,7 +112,6 @@ def benchmark(options):
         json.dump(results, f, sort_keys=True, indent=4)
         gym.logger.info('Benchmark done. Summary written in: {}'.format(benchmark_filename))
 
-
 def generate_agent_configs(benchmark_config, clean=False):
     """
         Generate several agent configurations from:
@@ -142,7 +138,6 @@ def generate_agent_configs(benchmark_config, clean=False):
                 [json.dump(config, path.open('w')) for config, path in zip(configs, paths)]
             benchmark_config["agents"] = paths
     return benchmark_config
-
 
 if __name__ == "__main__":
     main()
