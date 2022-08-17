@@ -30,6 +30,7 @@ class Evaluation(object):
     RUN_FOLDER = 'run_{}_{}'
     METADATA_FILE = 'metadata.{}.json'
     LOGGING_FILE = 'logging.{}.log'
+    METRICS_FILE = 'metrics.{}.json'
 
     def __init__(self,
                  env,
@@ -69,6 +70,8 @@ class Evaluation(object):
         self.sim_seed = sim_seed
         self.close_env = close_env
         self.display_env = display_env
+
+        self.metrics = {} # dict stores perf metrics
 
         self.directory = Path(directory or self.default_directory)
         self.run_directory = self.directory / (run_directory or self.default_run_directory)
@@ -181,6 +184,7 @@ class Evaluation(object):
         # Step the environment
         previous_observation, action = self.observation, actions[0]
         self.observation, reward, terminal, info = self.wrapped_env.step(action)
+        self.save_metrics(info)
 
         # Record the experience.
         try:
@@ -367,6 +371,27 @@ class Evaluation(object):
         file = self.run_directory / self.METADATA_FILE.format(file_infix)
         with file.open('w') as f:
             json.dump(metadata, f, sort_keys=True, indent=4)
+    
+    def save_metrics(self, info):
+        if self.metrics == {}:
+            for name in list(info["agent_names"]):
+                self.metrics[name] = 0
+        for idx, done in enumerate(list(info["agents_dones"])):
+            name = info["agent_names"][idx]
+            if done:
+                self.metrics[name] += 1
+        self.write_metrics()
+    
+    def write_metrics(self):
+        # Write the performance metrics:
+        # Ego vehicle: number_crashes_ego/episodes
+        # NPC vehicle: number_crashes_npc/episodes
+        metrics = dict(metrics=serialize(self.metrics))
+        file_infix = '{}.{}'.format(id(self.wrapped_env), os.getpid())
+        file = self.run_directory / self.METRICS_FILE.format(file_infix)
+        with file.open('w') as f:
+            json.dump(metrics, f, sort_keys=True, indent=4)
+    
 
     def write_logging(self):
         file_infix = '{}.{}'.format(id(self.wrapped_env), os.getpid())
