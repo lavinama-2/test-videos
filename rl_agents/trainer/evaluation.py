@@ -187,8 +187,9 @@ class Evaluation(object):
 
         # Step the environment
         previous_observation, action = self.observation, actions[0]
-        self.observation, reward, terminal, self.info = self.wrapped_env.step(action)
-
+        self.observation, reward, terminal, info = self.wrapped_env.step(action)
+        self.info = info
+        
         # Record the experience.
         try:
             if action_probs_important:
