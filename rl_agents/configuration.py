@@ -94,6 +94,8 @@ def serialize(obj):
         d = obj.config
     elif isinstance(obj, Serializable):
         d = obj.to_dict()
+    elif isinstance(obj, dict):
+        return d
     else:
         d = {key: repr(value) for (key, value) in obj.__dict__.items()}
     d['__class__'] = repr(obj.__class__)
