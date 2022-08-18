@@ -207,7 +207,6 @@ class MADDPGAgent(AbstractAgent):
         return self.actor_net(torch.tensor(states, dtype=torch.float).to(
             self.device)).data.cpu().numpy()
 
-
     def get_batch_state_action_values(self, states):
         """
         Get the state-action values of several states
@@ -261,7 +260,6 @@ class MADDPGAgent(AbstractAgent):
         self.training = False
         self.config['exploration']['method'] = "Greedy"
         self.exploration_policy = exploration_factory(self.config["exploration"], self.env.action_space)
-
 
 def step_optimizer(model_net, optimizer, loss):
     # Optimize the model
