@@ -46,7 +46,6 @@ class Evaluation(object):
                  display_rewards=True,
                  close_env=True):
         """
-
         :param env: The environment to be solved, possibly wrapping an AbstractEnv environment
         :param AbstractAgent agent: The agent solving the environment
         :param Path directory: Workspace directory path
@@ -72,7 +71,7 @@ class Evaluation(object):
         self.display_env = display_env
 
         # Attributes added
-        self.metrics = {} # dict stores perf metrics
+        self.metrics = {"success": {}, "crashes": {}} # dict stores perf metrics
         self.info = None
         ###
 
@@ -137,7 +136,6 @@ class Evaluation(object):
             pass
         self.run_episodes()
         self.close()
-
 
     def run_episodes(self):
         for self.episode in range(self.num_episodes):
@@ -379,15 +377,18 @@ class Evaluation(object):
     
     def save_metrics(self):
         """
-        Record the number of times each car has crashed
+        Record the number of times each car has crashed and goal achieved
         """
         if self.metrics == {}:
             for name in list(self.info["agent_names"]):
-                self.metrics[name] = 0
-        for idx, crashed in enumerate(list(self.info["agents_crashed"])):
-            name = self.info["agent_names"][idx]
+                self.metrics["success"][name] = 0
+                self.metrics["crashes"][name] = 0
+        for name, crashed, arrived in zip(list(self.info["agent_names"]), \
+            list(self.info["agents_crashed"]), list(self.info["agents_crashed"])):
+            if arrived:
+                self.metrics["success"][name] += 1
             if crashed:
-                self.metrics[name] += 1
+                self.metrics["crashes"][name] += 1
         self.write_metrics()
     
     def write_metrics(self):
@@ -399,7 +400,6 @@ class Evaluation(object):
         with file.open('w') as f:
             json.dump(self.metrics, f, sort_keys=True, indent=4)
     
-
     def write_logging(self):
         file_infix = '{}.{}'.format(id(self.wrapped_env), os.getpid())
         rl_agents.trainer.logger.configure()
