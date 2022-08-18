@@ -138,6 +138,7 @@ class Evaluation(object):
         self.run_episodes()
         self.close()
 
+
     def run_episodes(self):
         for self.episode in range(self.num_episodes):
             # Run episode
