@@ -379,7 +379,7 @@ class Evaluation(object):
         """
         Record the number of times each car has crashed and goal achieved
         """
-        if self.metrics == {}:
+        if self.episode == 0:
             for name in list(self.info["agent_names"]):
                 self.metrics["success"][name] = 0
                 self.metrics["crashes"][name] = 0
