@@ -26,5 +26,6 @@
     "high_speed_reward": 0.1,
     "speed_to_reward": 0,
     "arrived_reward": 100,
-    "rule_break_reward": -50
+    "rule_break_reward": -50,
+    "check_reg_road": true
 }

@@ -384,7 +384,7 @@ class Evaluation(object):
                 self.metrics["success"][name] = 0
                 self.metrics["crashes"][name] = 0
         for name, crashed, arrived in zip(list(self.info["agent_names"]), \
-            list(self.info["agents_crashed"]), list(self.info["agents_crashed"])):
+            list(self.info["agents_crashed"]), list(self.info["agents_arrived"])):
             if arrived:
                 self.metrics["success"][name] += 1
             if crashed:
