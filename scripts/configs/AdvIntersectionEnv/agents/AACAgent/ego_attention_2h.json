@@ -1,0 +1,11 @@
+{
+    "base_config": "configs/IntersectionEnv/agents/AACAgent/ego_attention.json",
+    "model": {
+        "type":"ActorCriticNetwork",
+        "base_net": {
+            "attention_layer": {
+                "heads": 2
+            }
+        }
+    }
+}

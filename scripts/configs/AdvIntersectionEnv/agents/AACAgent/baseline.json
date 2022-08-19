@@ -1,0 +1,21 @@
+{
+    "__class__": "<class 'rl_agents.agents.advantage_actor_critic.pytorch.AACAgent'>",
+    "model": {
+        "type":"ActorCriticNetwork",
+        "base_net": {
+            "type": "MultiLayerPerceptron",
+            "layers": [64, 64]
+        }
+    },
+    "gamma": 0.95,
+    "n_steps": 1,
+    "batch_size": 512,
+    "memory_capacity": 50000,
+    "target_update": 512,
+    "exploration": {
+        "method": "EpsilonGreedy",
+        "tau": 150000,
+        "temperature": 1.0,
+        "final_temperature": 0.05
+    }
+}

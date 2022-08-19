@@ -1,0 +1,21 @@
+{
+    "base_config": "configs/IntersectionEnv/agents/MADDPGAgent/ego_attention_ft.json",
+    "models": {
+        "actor": {
+            "type":"ActorNetwork",
+            "base_net": {
+                "attention_layer": {
+                    "heads": 4
+                }
+            }
+        },
+        "critic": {
+            "type":"CriticNetwork",
+            "base_net": {
+                "attention_layer": {
+                    "heads": 4
+                }
+            }
+        }
+    }
+}
