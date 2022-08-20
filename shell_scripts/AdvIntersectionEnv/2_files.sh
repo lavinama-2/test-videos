@@ -32,7 +32,10 @@ TERM=vt100 # or TERM=xterm
 
 # For rl-agents training
 cd rl-agents/scripts/
-python3 experiments.py evaluate configs/IntersectionEnv/env_multi_agent_dest_adv.json \
+python3 experiments.py evaluate configs/IntersectionEnv/env_multi_agent_dest.json \
                                configs/IntersectionEnv/agents/DQNAgent/ego_attention.json \
-                               --train --episodes=25000 --name-from-config --no-display 
-#                               --recover-from=../../out_agents/DQN_env_multi_agent_hash_dest_ego_attention_2h/checkpoint-best.tar
+                               --train --episodes=10 --name-from-config --no-display
+
+python3 experiments.py evaluate configs/IntersectionEnv/env_multi_agent_dest_v2.json \
+                               configs/IntersectionEnv/agents/DQNAgent/ego_attention.json \
+                               --train --episodes=10 --name-from-config --no-display                                
