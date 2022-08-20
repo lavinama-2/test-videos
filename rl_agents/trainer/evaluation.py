@@ -32,7 +32,7 @@ class Evaluation(object):
     LOGGING_FILE = 'logging.{}.log'
     METRICS_FILE = 'metrics.{}.json'
     # Added Attributes
-    RECORD_CRASHES = False
+    RECORD_CRASHES = True
 
     def __init__(self,
                  env,
