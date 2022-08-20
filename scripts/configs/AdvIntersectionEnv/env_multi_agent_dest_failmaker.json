@@ -1,5 +1,5 @@
 {
-    "id": "intersection-multi-agent-adv-v1",
+    "id": "intersection-multi-agent-adv-v0",
     "import_module": "highway_env",
     "observation": {
         "type": "MultiAgentObservation",
