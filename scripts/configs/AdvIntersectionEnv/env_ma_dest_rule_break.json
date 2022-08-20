@@ -21,11 +21,14 @@
     "controlled_vehicles": 2,
     "spawn_probability": 0,
     "destination": "o1",
-    "scaling_factor": 1,
-    "collision_reward": -50,
-    "high_speed_reward": 0.1,
-    "speed_to_reward": 0,
-    "arrived_reward": 100,
-    "rule_break_reward": -50,
-    "check_reg_road": true
+    "collision_reward": -5,
+    "high_speed_reward": 1,
+    "speed_to_reward": 3.5,
+    "arrived_reward": 1,
+    "rule_break_reward": -2.5,
+    "reward_speed_range": [7.0, 9.0],
+    "zero_sum_rewards": false,
+    "check_reg_road": true,
+    "failmaker_advrl": false,
+    "scaling_factor": 0.95
 }
