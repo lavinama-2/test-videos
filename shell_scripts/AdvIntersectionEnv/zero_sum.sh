@@ -34,4 +34,4 @@ TERM=vt100 # or TERM=xterm
 cd rl-agents/scripts/
 python3 experiments.py evaluate configs/AdvIntersectionEnv/env_multi_agent_dest_zero_sum.json \
                                configs/AdvIntersectionEnv/agents/DQNAgent/ego_attention.json \
-				--train --episodes=500 --name-from-config --no-display
+				                --train --episodes=500 --name-from-config --no-display

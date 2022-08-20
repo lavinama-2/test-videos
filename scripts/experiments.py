@@ -58,9 +58,11 @@ def evaluate(environment_config, agent_config, options):
     agent = load_agent(agent_config, env)
     run_directory = None
     if options['--name-from-config']:
-        run_directory = "{}_{}_{}".format(Path(agent_config).with_suffix('').name,
-                                  datetime.datetime.now().strftime('%Y%m%d-%H%M%S'),
-                                  os.getpid())
+        env_type = Path(environment_config).with_suffix('').name
+        run_directory = "{}_{}_{}_{}".format(env_type[21:],
+                                        Path(agent_config).with_suffix('').name,
+                                        datetime.datetime.now().strftime('%Y%m%d-%H%M%S'),
+                                        os.getpid())
     options['--seed'] = int(options['--seed']) if options['--seed'] is not None else None
     evaluation = Evaluation(env,
                             agent,

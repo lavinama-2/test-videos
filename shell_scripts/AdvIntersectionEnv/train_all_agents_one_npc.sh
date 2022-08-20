@@ -32,6 +32,28 @@ TERM=vt100 # or TERM=xterm
 
 # For rl-agents training
 cd rl-agents/scripts/
-python3 experiments.py evaluate configs/AdvIntersectionEnv/env_ma_dest_rule_break.json \
+
+# background
+python3 experiments.py evaluate configs/AdvIntersectionEnv/env_multi_agent_dest_background.json \
                                configs/AdvIntersectionEnv/agents/DQNAgent/ego_attention.json \
-                               --train --episodes=500 --name-from-config --no-display 
+                               --train --episodes=10000 --name-from-config --no-display 
+
+# good_agent
+python3 experiments.py evaluate configs/AdvIntersectionEnv/env_multi_agent_dest_good_agent.json \
+                               configs/AdvIntersectionEnv/agents/DQNAgent/ego_attention.json \
+                               --train --episodes=10000 --name-from-config --no-display 
+
+# zero_sum
+python3 experiments.py evaluate configs/AdvIntersectionEnv/env_multi_agent_dest_zero_sum.json \
+                               configs/AdvIntersectionEnv/agents/DQNAgent/ego_attention.json \
+				                --train --episodes=10000 --name-from-config --no-display
+
+# failmaker
+python3 experiments.py evaluate configs/AdvIntersectionEnv/env_multi_agent_dest_failmaker.json \
+                               configs/AdvIntersectionEnv/agents/DQNAgent/ego_attention.json \
+				                --train --episodes=10000 --name-from-config --no-display
+
+# rule_break
+python3 experiments.py evaluate configs/AdvIntersectionEnv/env_multi_agent_dest_rule_break.json \
+                               configs/AdvIntersectionEnv/agents/DQNAgent/ego_attention.json \
+                               --train --episodes=10000 --name-from-config --no-display 
