@@ -31,6 +31,8 @@ class Evaluation(object):
     METADATA_FILE = 'metadata.{}.json'
     LOGGING_FILE = 'logging.{}.log'
     METRICS_FILE = 'metrics.{}.json'
+    # Added Attributes
+    RECORD_CRASHES = False
 
     def __init__(self,
                  env,
@@ -379,17 +381,18 @@ class Evaluation(object):
         """
         Record the number of times each car has crashed and goal achieved
         """
-        if self.episode == 0:
-            for name in list(self.info["agent_names"]):
-                self.metrics["success"][name] = 0
-                self.metrics["crashes"][name] = 0
-        for name, crashed, arrived in zip(list(self.info["agent_names"]), \
-            list(self.info["agents_crashed"]), list(self.info["agents_arrived"])):
-            if arrived:
-                self.metrics["success"][name] += 1
-            if crashed:
-                self.metrics["crashes"][name] += 1
-        self.write_metrics()
+        if self.RECORD_CRASHES:
+            if self.episode == 0:
+                for name in list(self.info["agent_names"]):
+                    self.metrics["success"][name] = 0
+                    self.metrics["crashes"][name] = 0
+            for name, crashed, arrived in zip(list(self.info["agent_names"]), \
+                list(self.info["agents_crashed"]), list(self.info["agents_arrived"])):
+                if arrived:
+                    self.metrics["success"][name] += 1
+                if crashed:
+                    self.metrics["crashes"][name] += 1
+            self.write_metrics()
     
     def write_metrics(self):
         # Write the performance metrics:
