@@ -1,5 +1,5 @@
 {
-    "id": "intersection-multi-agent-adv-v0",
+    "id": "intersection-multi-agent-v0",
     "import_module": "highway_env",
     "observation": {
         "type": "MultiAgentObservation",
@@ -18,8 +18,10 @@
         }
     },
     "initial_vehicle_count": 0,
-    "controlled_vehicles": 2,
+    "controlled_vehicles": 4,
     "spawn_probability": 0,
     "destination": null,
-    "failmaker_advrl": true
+    "collision_reward": -5,
+    "high_speed_reward": 1,
+    "arrived_reward": 1
 }
