@@ -18,9 +18,9 @@
         }
     },
     "initial_vehicle_count": 0,
-    "controlled_vehicles": 4,
+    "controlled_vehicles": 2,
     "spawn_probability": 0,
-    "destination": null,
+    "destination": "o1",
     "collision_reward": -5,
     "high_speed_reward": 1,
     "arrived_reward": 1
