@@ -17,7 +17,7 @@
             "order": "shuffled"
         }
     },
-    "initial_vehicle_count": 2,
+    "initial_vehicle_count": 8,
     "controlled_vehicles": 1,
     "spawn_probability": 1,
     "destination": "o1",
