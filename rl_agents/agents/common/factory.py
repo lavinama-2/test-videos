@@ -72,7 +72,7 @@ def load_environment(env_config):
     if env_config.get("import_module", None):
         __import__(env_config["import_module"])
     try:
-        print("id", env_config['id'])
+        print("ID", env_config['id'])
         env = gym.make(env_config['id'])
         # Save env module in order to be able to import it again
         env.import_module = env_config.get("import_module", None)
@@ -80,7 +80,7 @@ def load_environment(env_config):
         raise ValueError("The gym register id of the environment must be provided")
     except gym.error.UnregisteredEnv:
         # The environment is unregistered.
-        print("import_module", env_config["import_module"])
+        print("IMPORT_MODULE", env_config["import_module"])
         raise gym.error.UnregisteredEnv('Environment {} not registered. The environment module should be specified by '
                                         'the "import_module" key of the environment configuration'.format(
                                             env_config['id']))
