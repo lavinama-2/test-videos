@@ -34,26 +34,26 @@ TERM=vt100 # or TERM=xterm
 cd rl-agents/scripts/
 
 # background
-python3 experiments.py evaluate configs/AdvIntersectionEnv/env_multi_agent_dest_background.json \
+python3 experiments.py evaluate configs/AdvIntersectionEnv/one_npc/env_multi_agent_dest_background.json \
                                configs/AdvIntersectionEnv/agents/DQNAgent/baseline.json \
                                --train --episodes=10000 --name-from-config --no-display 
 
 # good_agent
-python3 experiments.py evaluate configs/AdvIntersectionEnv/env_multi_agent_dest_good_agent.json \
+python3 experiments.py evaluate configs/AdvIntersectionEnv/one_npc/env_multi_agent_dest_good_agent.json \
                                configs/AdvIntersectionEnv/agents/DQNAgent/baseline.json \
                                --train --episodes=10000 --name-from-config --no-display 
 
 # zero_sum
-python3 experiments.py evaluate configs/AdvIntersectionEnv/env_multi_agent_dest_zero_sum.json \
+python3 experiments.py evaluate configs/AdvIntersectionEnv/one_npc/env_multi_agent_dest_zero_sum.json \
                                configs/AdvIntersectionEnv/agents/DQNAgent/baseline.json \
 				                --train --episodes=10000 --name-from-config --no-display
 
 # failmaker
-python3 experiments.py evaluate configs/AdvIntersectionEnv/env_multi_agent_dest_failmaker.json \
+python3 experiments.py evaluate configs/AdvIntersectionEnv/one_npc/env_multi_agent_dest_failmaker.json \
                                configs/AdvIntersectionEnv/agents/DQNAgent/baseline.json \
 				                --train --episodes=10000 --name-from-config --no-display
 
 # rule_break
-python3 experiments.py evaluate configs/AdvIntersectionEnv/env_multi_agent_dest_rule_break.json \
+python3 experiments.py evaluate configs/AdvIntersectionEnv/one_npc/env_multi_agent_dest_rule_break.json \
                                configs/AdvIntersectionEnv/agents/DQNAgent/baseline.json \
                                --train --episodes=10000 --name-from-config --no-display 
