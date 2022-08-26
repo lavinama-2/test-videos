@@ -107,13 +107,12 @@ class MADDPGAgent(AbstractAgent):
 
     def record(self, state, action, reward, next_state, done, info):
         """
-            Record a transition by performing a Policy Gradient iteration
-
-            - push the transition into memory
-            - sample a minibatch
-            - compute the bellman residual loss over the minibatch
-            - perform one gradient descent step
-            - slowly track the policy network with the target network
+            Record a transition by performing a Policy Gradient iteration:
+            1. push the transition into memory
+            2. sample a minibatch
+            3. compute the bellman residual loss over the minibatch
+            4. perform one gradient descent step
+            5. slowly track the policy network with the target network
         :param state: a state
         :param action: an action
         :param reward: a reward
