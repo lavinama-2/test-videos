@@ -384,8 +384,10 @@ class Evaluation(object):
         if self.RECORD_CRASHES:
             if self.episode == 0:
                 for name in list(self.info["agent_names"]):
-                    self.metrics["arrived"][name] = 0
                     self.metrics["crashes"][name] = 0
+                    self.metrics["arrived"][name] = 0
+                    self.metrics["duration_exceeded"][name] = 0
+                    self.metrics["dones"][name] = 0
             for name, crashed in zip(list(self.info["agent_names"]), list(self.info["agents_crashed"])):
                 if crashed:
                     self.metrics["crashes"][name] += 1
@@ -401,7 +403,8 @@ class Evaluation(object):
             self.write_metrics()
     
     def write_metrics(self):
-        # Write the performance metrics
+        # Write the performance metrics:
+
         file_infix = '{}.{}'.format(id(self.wrapped_env), os.getpid())
         file = self.run_directory / self.METRICS_FILE.format(file_infix)
         with file.open('w') as f:
