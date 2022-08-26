@@ -73,7 +73,7 @@ class Evaluation(object):
         self.display_env = display_env
 
         # Attributes added
-        self.metrics = {"success": {}, "crashes": {}} # dict stores perf metrics
+        self.metrics = {"arrived": {}, "crashes": {}, "duration_exceeded": {}, "dones": {}} # dict stores perf metrics
         self.info = None
         ###
 
@@ -384,14 +384,20 @@ class Evaluation(object):
         if self.RECORD_CRASHES:
             if self.episode == 0:
                 for name in list(self.info["agent_names"]):
-                    self.metrics["success"][name] = 0
+                    self.metrics["arrived"][name] = 0
                     self.metrics["crashes"][name] = 0
-            for name, crashed, arrived in zip(list(self.info["agent_names"]), \
-                list(self.info["agents_crashed"]), list(self.info["agents_arrived"])):
-                if arrived:
-                    self.metrics["success"][name] += 1
+            for name, crashed in zip(list(self.info["agent_names"]), list(self.info["agents_crashed"])):
                 if crashed:
                     self.metrics["crashes"][name] += 1
+            for name, arrived in zip(list(self.info["agent_names"]), list(self.info["agents_arrived"])):
+                if arrived:
+                    self.metrics["arrived"][name] += 1
+            for name, duration_exceeded in zip(list(self.info["agent_names"]), list(self.info["duration_exceeded"])):
+                if duration_exceeded:
+                    self.metrics["duration_exceeded"][name] += 1
+            for name, done in zip(list(self.info["agent_names"]), list(self.info["agents_dones"])):
+                if done:
+                    self.metrics["dones"][name] += 1
             self.write_metrics()
     
     def write_metrics(self):

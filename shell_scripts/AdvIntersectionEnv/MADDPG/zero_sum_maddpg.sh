@@ -33,5 +33,5 @@ TERM=vt100 # or TERM=xterm
 # For rl-agents training
 cd rl-agents/scripts/
 python3 experiments.py evaluate configs/AdvIntersectionEnv/env_multi_agent_dest_zero_sum.json \
-                               configs/AdvIntersectionEnv/agents/MADDPGAgent/baseline.json \
+                               configs/≥/agents/MADDPGAgent/baseline.json \
 				                --train --episodes=100 --name-from-config --no-display
