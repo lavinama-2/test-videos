@@ -401,9 +401,7 @@ class Evaluation(object):
             self.write_metrics()
     
     def write_metrics(self):
-        # Write the performance metrics:
-        # Ego vehicle: number_crashes_*/episodes
-        # NPC vehicle: number_crashes_npc/episodes
+        # Write the performance metrics
         file_infix = '{}.{}'.format(id(self.wrapped_env), os.getpid())
         file = self.run_directory / self.METRICS_FILE.format(file_infix)
         with file.open('w') as f:

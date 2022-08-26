@@ -160,6 +160,8 @@ class MADDPGAgent(AbstractAgent):
 
             # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
             # columns of actions taken
+            print("SHAPE full_state:", full_state.shape)
+            print("SHAPE full_action:", full_action.shape)
             state_action_values = self.critic_net(full_state, full_action)
 
             with torch.no_grad():
