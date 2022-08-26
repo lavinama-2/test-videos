@@ -43,6 +43,21 @@ def main():
     elif opts['benchmark']:
         benchmark(opts)
 
+def find_between(s, first, last):
+    """
+        Find the string between two substrings
+    :param s: main string
+    :param first: substring before string we want to return
+    :param last: substring after string we want to return
+    :return: string
+    """
+    try:
+        start = s.index(first) + len(first)
+        end = s.index(last, start)
+        return s[start:end]
+    except ValueError:
+        return ""
+
 def evaluate(environment_config, agent_config, options):
     """
         Evaluate an agent interacting with an environment.
@@ -58,8 +73,11 @@ def evaluate(environment_config, agent_config, options):
     agent = load_agent(agent_config, env)
     run_directory = None
     if options['--name-from-config']:
+        init_path = "configs/AdvIntersectionEnv/"
+        number_npc = find_between(environment_config, init_path, "/")
         env_type = Path(environment_config).with_suffix('').name
-        run_directory = "{}_{}_{}_{}".format(env_type[21:],
+        run_directory = "{}_{}_{}_{}_{}".format(number_npc,
+                                        env_type[21:],
                                         Path(agent_config).with_suffix('').name,
                                         datetime.datetime.now().strftime('%Y%m%d-%H%M%S'),
                                         os.getpid())
@@ -125,7 +143,7 @@ def generate_agent_configs(benchmark_config, clean=False):
         argument clean=True.
     :param benchmark_config: a benchmark configuration
     :param clean: should the temporary agent configurations files be removed
-    :return the updated benchmark config
+    :return: the updated benchmark config
     """
     if "base_agent" in benchmark_config:
         with open(benchmark_config["base_agent"], 'r') as f:
