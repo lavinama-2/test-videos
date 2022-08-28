@@ -134,6 +134,7 @@ class CriticNetwork(BaseModule, Configurable):
         if self.config.get("n_agents", None):
             # Centralised MultiAgent Critic
             input_dim *= self.config["n_agents"]
+        print("INPUT_DIM", input_dim)    
         self.config["base_net"]["in"] = input_dim
         self.config["base_net"]["out"] = 1  # Q networks return only one value
         self.base_net = model_factory(self.config["base_net"])
