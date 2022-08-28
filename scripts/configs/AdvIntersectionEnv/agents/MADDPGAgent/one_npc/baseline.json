@@ -16,15 +16,15 @@
             }
         }
     },
+    "n_agents": 4,
     "gamma": 0.95,
     "n_steps": 1,
-    "batch_size": 256,
-    "memory_capacity": 25000,
+    "memory_capacity": 50000,
     "target_update": 512,
     "exploration": {
         "method": "EpsilonGreedy",
-        "tau": 50000,
-        "temperature": 0.5,
+        "tau": 150000,
+        "temperature": 1.0,
         "final_temperature": 0.05
     }
 }
