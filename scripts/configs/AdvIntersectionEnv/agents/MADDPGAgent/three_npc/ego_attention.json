@@ -1,27 +1,23 @@
 {
-    "base_config": "configs/IntersectionEnv/agents/MADDPGAgent/baseline.json",
+    "base_config": "configs/IntersectionEnv/agents/MADDPGAgent/three_npc/ego_attention_agent.json",
     "models": {
-        "actor": {
-            "type":"ActorNetwork",
+        "critic": {
+            "type":"CriticNetwork",
             "base_net": {
                 "type": "EgoAttentionNetwork",
                 "embedding_layer": {
                     "type": "MultiLayerPerceptron",
                     "layers": [64, 64],
                     "reshape": false,
-                    "in": 9
+                    "in": 12
                 },
                 "others_embedding_layer": {
                     "type": "MultiLayerPerceptron",
                     "layers": [64, 64],
                     "reshape": false,
-                    "in": 9
+                    "in": 12
                 },
-                "self_attention_layer": {
-                    "type": "SelfAttention",
-                    "feature_size": 64,
-                    "heads": 1
-                },
+                "self_attention_layer": null,
                 "attention_layer": {
                     "type": "EgoAttention",
                     "feature_size": 64,
