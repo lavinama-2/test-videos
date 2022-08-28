@@ -33,5 +33,5 @@ TERM=vt100 # or TERM=xterm
 # For rl-agents training
 cd rl-agents/scripts/
 python3 experiments.py evaluate configs/AdvIntersectionEnv/three_npc/env_multi_agent_dest_failmaker.json \
-                               configs/AdvIntersectionEnv/agents/DQNAgent/ego_attention.json \
+                               configs/AdvIntersectionEnv/agents/MADDPGAgent/ego_attention.json \
 				                --train --episodes=10000 --name-from-config --no-display
