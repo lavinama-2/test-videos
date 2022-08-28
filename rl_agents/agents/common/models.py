@@ -131,7 +131,10 @@ class CriticNetwork(BaseModule, Configurable):
         super().__init__()
         Configurable.__init__(self, config)
         input_dim = self.config["in"] + self.config["n_actions"]
+        print("self.config[in]", self.config["in"])
+        print("self.config[n_actions]", self.config["n_actions"])
         if self.config.get("n_agents", None):
+            print("self.config[n_agents]", self.config["n_agents"])
             # Centralised MultiAgent Critic
             input_dim *= self.config["n_agents"]
         print("INPUT_DIM", input_dim)    
