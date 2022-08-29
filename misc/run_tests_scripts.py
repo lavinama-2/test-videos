@@ -102,7 +102,7 @@ for algorithm in os.listdir(path_algorithm):
                                             name_trained_agent = name_trained_agent.replace("_test", "")
                                             train_type = "test"
                                         algorithm,number_agents,type_agent,name_trained_agent,train_type
-                                        subprocess.call(["./shell_scripts/AdvIntersectionEnv/test_script.sh", algorithm,number_agents,type_agent,path_model,name_trained_agent])
+                                        subprocess.call(["shell_scripts/AdvIntersectionEnv/test_script.sh", algorithm,number_agents,type_agent,path_model,name_trained_agent])
                                             
                         
 """
