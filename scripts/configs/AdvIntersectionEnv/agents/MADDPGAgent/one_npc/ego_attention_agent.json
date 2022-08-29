@@ -1,5 +1,5 @@
 {
-    "base_config": "configs/IntersectionEnv/agents/MADDPGAgent/one_npc/baseline.json",
+    "base_config": "configs/AdvIntersectionEnv/agents/MADDPGAgent/one_npc/baseline.json",
     "models": {
         "actor": {
             "type":"ActorNetwork",

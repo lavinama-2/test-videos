@@ -1,5 +1,5 @@
 {
-    "base_config": "configs/IntersectionEnv/agents/MADDPGAgent/three_npc/ego_attention_agent.json",
+    "base_config": "configs/AdvIntersectionEnv/agents/MADDPGAgent/three_npc/ego_attention_agent.json",
     "models": {
         "critic": {
             "type":"CriticNetwork",
