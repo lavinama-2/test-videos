@@ -76,11 +76,16 @@ def evaluate(environment_config, agent_config, options):
         init_path = "configs/AdvIntersectionEnv/"
         number_npc = find_between(environment_config, init_path, "/")
         env_type = Path(environment_config).with_suffix('').name
-        run_directory = "{}_{}_{}_{}_{}".format(number_npc,
-                                        env_type[21:],
-                                        Path(agent_config).with_suffix('').name,
-                                        datetime.datetime.now().strftime('%Y%m%d-%H%M%S'),
-                                        os.getpid())
+        if options['--train']:
+            train_test = "train"
+        if options['--test']:
+            train_test = "test"
+        run_directory = "{}_{}_{}_{}_{}_{}".format(number_npc,
+                                            env_type[21:],
+                                            Path(agent_config).with_suffix('').name,
+                                            train_test,
+                                            datetime.datetime.now().strftime('%Y%m%d-%H%M%S'),
+                                            os.getpid())
     options['--seed'] = int(options['--seed']) if options['--seed'] is not None else None
     evaluation = Evaluation(env,
                             agent,
