@@ -61,4 +61,4 @@ python3 experiments.py evaluate configs/AdvIntersectionEnv/env_multi_agent_dest_
 python3 experiments.py evaluate configs/AdvIntersectionEnv/env_multi_agent_dest_rule_break.json \
                                configs/AdvIntersectionEnv/agents/DQNAgent/ego_attention.json \
                                 --test --recover-from=out/MultiAgentAdvIntersectionEnv/DQNAgent/rule_break_ego_attention_20220820-235737_305058/checkpoint-best.tar \
-                                --episodes=10000 --name-from-config --no-display 
+                                --episodes=1000 --name-from-config --no-display 

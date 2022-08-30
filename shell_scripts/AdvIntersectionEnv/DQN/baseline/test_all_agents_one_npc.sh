@@ -61,4 +61,4 @@ python3 experiments.py evaluate configs/AdvIntersectionEnv/one_npc/env_multi_age
 python3 experiments.py evaluate configs/AdvIntersectionEnv/one_npc/env_multi_agent_dest_rule_break.json \
                                configs/AdvIntersectionEnv/agents/DQNAgent/baseline.json \
                                 --test --recover-from=out/MultiAgentAdvIntersectionEnv/DQNAgent/one_npc/baseline/one_npc_rule_break_train_baseline_20220827-203808_627204/checkpoint-best.tar \
-                                --episodes=10000 --name-from-config --no-display 
+                                --episodes=1000 --name-from-config --no-display 

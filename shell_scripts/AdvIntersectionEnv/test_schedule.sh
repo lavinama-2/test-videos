@@ -20,6 +20,6 @@ bash ~/rl-agents/shell_scripts/AdvIntersectionEnv/MADDPG/three_npc/baseline/test
 
 ## ego_attention
 ### N = 1
-# bash ~/rl-agents/shell_scripts/AdvIntersectionEnv/MADDPG/ego_attention/train_all_agents_three_npc.sh
+# bash ~/rl-agents/shell_scripts/AdvIntersectionEnv/MADDPG/one_npc/ego_attention/train_all_agents_ego_attention.sh
 ### N = 3
 bash ~/rl-agents/shell_scripts/AdvIntersectionEnv/MADDPG/three_npc/ego_attention/test_all_agents_three_npc.sh
