@@ -332,6 +332,7 @@ class Evaluation(object):
                 logger.info("Loaded {} model from {}".format(self.agent.__class__.__name__, model_path))
         except FileNotFoundError:
             logger.warning("No pre-trained model found at the desired location.")
+            exit()
         except NotImplementedError:
             pass
 
