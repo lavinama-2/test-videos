@@ -82,8 +82,8 @@ def evaluate(environment_config, agent_config, options):
             train_test = "test"
         run_directory = "{}_{}_{}_{}_{}_{}".format(number_npc,
                                             env_type[21:],
-                                            Path(agent_config).with_suffix('').name,
                                             train_test,
+                                            Path(agent_config).with_suffix('').name,
                                             datetime.datetime.now().strftime('%Y%m%d_%H%M%S'),
                                             os.getpid())
     options['--seed'] = int(options['--seed']) if options['--seed'] is not None else None
