@@ -86,6 +86,7 @@ def evaluate(environment_config, agent_config, options):
                                             Path(agent_config).with_suffix('').name,
                                             datetime.datetime.now().strftime('%Y%m%d_%H%M%S'),
                                             os.getpid())
+        print("RUN_DIRECTORY", run_directory)
     options['--seed'] = int(options['--seed']) if options['--seed'] is not None else None
     evaluation = Evaluation(env,
                             agent,
