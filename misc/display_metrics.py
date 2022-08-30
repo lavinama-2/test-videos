@@ -41,8 +41,11 @@ def calc_percentages(raw_metrics):
 
 def print_lines(algorithm,number_agents,type_agent,name_trained_agent,train_type,vehicle,per):
     string_to_print = "{:<10} {:<10} {:<15} {:<12} {:<6} {:<8} {:<4}".format(algorithm,number_agents,type_agent,name_trained_agent,train_type,vehicle,per)
-    if vehicle == "ego":
+    if "test" in train_type and vehicle == "ego":
         string_to_print = color.BOLD + string_to_print + color.END
+    if vehicle == "ego":
+        pass 
+        # string_to_print = color.BOLD + string_to_print + color.END
     if "zero_sum" in name_trained_agent:
         string_to_print = color.PURPLE + string_to_print + color.END
     if "rule_break" in name_trained_agent:
@@ -52,9 +55,8 @@ def print_lines(algorithm,number_agents,type_agent,name_trained_agent,train_type
     if "good_agent" in name_trained_agent:
         string_to_print = color.YELLOW + string_to_print + color.END
     if "background" in name_trained_agent:
-        string_to_print = color.RED + string_to_print + color.END
-    if "test" in train_type:
-        string_to_print = color.UNDERLINE + string_to_print + color.END
+        string_to_print = color.DARKCYAN + string_to_print + color.END
+    
     print(string_to_print)
 
 
@@ -86,6 +88,7 @@ for algorithm in os.listdir(path_algorithm):
                         metrics[algorithm][number_agents][type_agent] = {}
                         types_agents.append(type_agent)
                         print("---------------------------------------------------------------------------")
+                        print(color.BOLD + "{:<10} {:<10} {:<15} ".format(algorithm, number_agents,type_agent) + color.END)
                         # Look for: zero_sum, failmaker, background, ...
                         for trained_agents in os.listdir(path_to_json):
                             if trained_agents[0] != ".":
@@ -104,14 +107,17 @@ for algorithm in os.listdir(path_algorithm):
                                             if "test" in name_trained_agent:
                                                 name_trained_agent = name_trained_agent.replace("_test", "")
                                                 train_type = "test"
+                                            if "background" in name_trained_agent:
+                                                name_trained_agent = "background"
                                             
                                             metrics[algorithm][number_agents][type_agent][name_trained_agent] = {}
                                             metrics_file = json.load(json_file)
                                             percentages = calc_percentages(metrics_file)
                                             for vehicle, per in percentages.items():
-                                                metrics[algorithm][number_agents][type_agent][name_trained_agent][vehicle] = per
-                                                final_dict[name_trained_agent + "_" + vehicle] = [algorithm, number_agents, type_agent, per]
-                                                print_lines(algorithm,number_agents,type_agent,name_trained_agent,train_type,vehicle,per)
+                                                if vehicle == "ego" and train_type == "train":
+                                                    metrics[algorithm][number_agents][type_agent][name_trained_agent][vehicle] = per
+                                                    final_dict[name_trained_agent + "_" + vehicle] = [algorithm, number_agents, type_agent, per]
+                                                    print_lines(algorithm,number_agents,type_agent,name_trained_agent,train_type,vehicle,per)
                         
 """
 print("{:<30} {:<15} {:<10} {:<12} {:<8}".format('Agent + Vehicle','algorithm','number_agents','type_agent','per'))
