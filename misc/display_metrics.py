@@ -10,7 +10,7 @@ metrics = {}
 path_type_agent = "scripts/out/MultiAgentAdvIntersectionEnv/DQNAgent/one_npc"
 path_number_agents = "scripts/out/MultiAgentAdvIntersectionEnv/DQNAgent"
 path_algorithm = "scripts/out/MultiAgentAdvIntersectionEnv"
-
+SHOW_EGO = True
 class color:
    PURPLE = '\033[95m'
    CYAN = '\033[96m'
@@ -67,6 +67,20 @@ final_dict = {}
 train_type = ""
 print("{:<10} {:<10} {:<15} {:<12} {:<6} {:<8} {:<4}".format('algorithm','number_agents','type_agent','Agent','Train Type','Vehicle','%'))
 
+def display_ego_metrics(metrics,algorithm,number_agents,type_agent,name_trained_agent,train_type,vehicle,per):
+    if vehicle == "ego" and train_type == "train":
+        metrics[algorithm][number_agents][type_agent][name_trained_agent][vehicle] = per
+        final_dict[name_trained_agent + "_" + vehicle] = [algorithm, number_agents, type_agent, per]
+        print_lines(algorithm,number_agents,type_agent,name_trained_agent,train_type,vehicle,per)
+    return metrics
+
+def display_npc_metrics(metrics,algorithm,number_agents,type_agent,name_trained_agent,train_type,vehicle,per):
+    if  train_type == "train":
+        metrics[algorithm][number_agents][type_agent][name_trained_agent][vehicle] = per
+        final_dict[name_trained_agent + "_" + vehicle] = [algorithm, number_agents, type_agent, per]
+        print_lines(algorithm,number_agents,type_agent,name_trained_agent,train_type,"npc",per)
+    return metrics
+
 # Look for: DQNAgent, MADDPGAgent
 for algorithm in os.listdir(path_algorithm):
     if algorithm == "DQNAgent" or algorithm == "MADDPGAgent":
@@ -113,12 +127,20 @@ for algorithm in os.listdir(path_algorithm):
                                             metrics[algorithm][number_agents][type_agent][name_trained_agent] = {}
                                             metrics_file = json.load(json_file)
                                             percentages = calc_percentages(metrics_file)
+                                            if not SHOW_EGO:
+                                                npc_per = []
                                             for vehicle, per in percentages.items():
-                                                if vehicle == "ego" and train_type == "train":
-                                                    metrics[algorithm][number_agents][type_agent][name_trained_agent][vehicle] = per
-                                                    final_dict[name_trained_agent + "_" + vehicle] = [algorithm, number_agents, type_agent, per]
-                                                    print_lines(algorithm,number_agents,type_agent,name_trained_agent,train_type,vehicle,per)
-                        
+                                                if SHOW_EGO:
+                                                    metrics = display_ego_metrics(metrics,algorithm,number_agents,type_agent,name_trained_agent,train_type,vehicle,per)
+                                                else:
+                                                    if "npc" in vehicle:
+                                                        npc_per.append(per)
+                                            if not SHOW_EGO and name_trained_agent != "background":
+                                                per = round(sum(npc_per)/len(npc_per), 2)
+                                                metrics = display_npc_metrics(metrics,algorithm,number_agents,type_agent,name_trained_agent,train_type,vehicle,per)
+
+                                                    
+
 """
 print("{:<30} {:<15} {:<10} {:<12} {:<8}".format('Agent + Vehicle','algorithm','number_agents','type_agent','per'))
 for name_trained_agent_vehicle, v in final_dict.items():
