@@ -10,7 +10,7 @@ metrics = {}
 path_type_agent = "scripts/out/MultiAgentAdvIntersectionEnv/DQNAgent/one_npc"
 path_number_agents = "scripts/out/MultiAgentAdvIntersectionEnv/DQNAgent"
 path_algorithm = "scripts/out/MultiAgentAdvIntersectionEnv"
-SHOW_EGO = True
+SHOW_EGO = False
 class color:
    PURPLE = '\033[95m'
    CYAN = '\033[96m'
